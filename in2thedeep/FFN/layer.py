@@ -20,12 +20,17 @@ class Layer():
     def get_symmetric_builder(self):
         raise NotImplementedError('construct symmetric layer')
 
+    def __str__(self):
+        return "{}".format(self.architecture)
 
-def LayerBuilder():
+
+class LayerBuilder():
     def __init__(self, layer_constructor, architecture, params):
         self.architecture = architecture
         self.params = params
         self.layer_constructor = layer_constructor
 
-    def get_layer(input):
-        return layer_constructor(input, architecture, params)
+    def get_layer(self, input):
+        return self.layer_constructor(input, self.architecture, self.params)
+
+
