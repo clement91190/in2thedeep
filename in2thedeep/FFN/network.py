@@ -4,19 +4,22 @@ import theano.tensor as T
 
 #TODO add a more general class ? 
 class FFNetwork():
-    """ feed forward general Network """
-    def __init__(self, input, list_of_layers_builder):
+    """ feed forward general Network, in case of not using conv net, disard params dataset_shape, input_shape """
+    def __init__(self, input, list_of_layers_builder,  dataset_shape=(1, 1, 32, 32), input_type='matrix'):
         self.layers = []
         self.input = input
-        temp_input = input
-        for layer_builder in list_of_layers_builder:
-            self.layers.append(layer_builder.get_layer(temp_input))
-            temp_input = self.layers[-1].output
-        self.output = temp_input
         self.params = []
-        for layer in self.layers:
-            for param in layer.params:
-                self.params.append(param)
+        self.output = input
+        self.dataset_shape = dataset_shape
+        self.temp_type = input_type  
+        
+        self.reshape_mapping = {
+            ("matrix", "tensor4"): lambda input, shape: input.reshape(*shape),
+            ("tensor4", "matrix"): lambda input, shape: input.flatten(2)
+        }
+
+        for layer_builder in list_of_layers_builder:
+            self.add_layer(layer_builder)
 
     def save_model(self, path='model.tkl'):
         with open(path) as f:
@@ -27,8 +30,19 @@ class FFNetwork():
         return FFNetworkBuilder([layer.get_symmetric_builder() for layer in reversed(self.layers)])
 
     def add_layer(self, layer_builder):
-        temp_input = self.layers[-1].output
-        self.layers.append(layer_builder.get_layer(temp_input))
+        try:
+            temp_input = self.layers[-1].output
+        except:
+            temp_input = self.input
+
+        #potential reshaping
+        next_type = layer_builder.input_structure()
+        if self.temp_type != next_type :
+            temp_input = self.reshape_mapping[(self.temp_type, next_type)](temp_input, self.dataset_shape)
+            self.temp_type = next_type
+        
+        layer = layer_builder.get_layer(temp_input)
+        self.layers.append(layer)
         for param in self.layers[-1].params:
             self.params.append(param)
         self.output = self.layers[-1].output
@@ -83,14 +97,14 @@ class FFNetworkBuilder():
     def __init__(self, list_of_layers_builder):
         self.list_of_layers_builder = list_of_layers_builder
 
-    def get_network(self, input):
-        return FFNetwork(input, self.list_of_layers_builder)
+    def get_network(self, input, dataset_shape=(1, 1, 32, 32), input_type='matrix'):
+        return FFNetwork(input, self.list_of_layers_builder, dataset_shape, input_type)
 
 
 class AutoEncoderBuilder(FFNetworkBuilder):
     """ construct a Autoencoder from any Network """
-    def get_network(self, input):
-        net = FFNetwork(input, self.list_of_layers_builder)
+    def get_network(self, input, dataset_shape=(1, 1, 32, 32), input_type='matrix'):
+        net = FFNetwork(input, self.list_of_layers_builder, dataset_shape, input_type)
         net.union(net.get_symmetric_builder())
         return net
 

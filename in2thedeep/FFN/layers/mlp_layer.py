@@ -58,4 +58,7 @@ class HiddenLayer(Layer):
         params = [W_, b_] 
         return LayerBuilder(layer_constructor, architecture, params)
 
+    @staticmethod
+    def input_structure():
+        return "matrix"
 

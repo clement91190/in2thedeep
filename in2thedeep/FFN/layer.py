@@ -23,6 +23,13 @@ class Layer():
     def __str__(self):
         return "{}".format(self.architecture)
 
+    @staticmethod
+    def input_structure():
+        """ describe the shape of the input 
+         -> "matrix" (classif(batch_size, feature_size))
+         -> "tensor4" for LENETMaxPoolLAyer(batch_size, feature_map _size(RGB channels, image_width, image_height)))"""
+        raise NotImplementedError('must precise the shape of input')
+
 
 class LayerBuilder():
     def __init__(self, layer_constructor, architecture, params):
@@ -32,5 +39,8 @@ class LayerBuilder():
 
     def get_layer(self, input):
         return self.layer_constructor(input, self.architecture, self.params)
+    
+    def input_structure(self):
+        return self.layer_constructor.input_structure()
 
 
