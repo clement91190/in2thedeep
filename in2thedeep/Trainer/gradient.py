@@ -3,6 +3,7 @@ import theano
 import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 from in2thedeep.FFN.layers.mlp_layer import HiddenLayer
+from in2thedeep.FFN.layers.conv_layer import LeNetConvPoolLayer
 from in2thedeep.FFN.network import NetworkTester, AutoEncoderBuilder 
 from in2thedeep.FFN.layer import LayerBuilder
 
@@ -29,10 +30,11 @@ class Gradient():
             givens={
                 self.network_tester.input: self.train_set_x[self.index * self.batch_size:(self.index + 1) * self.batch_size],
                 self.network_tester.y_values: self.train_set_y[self.index * self.batch_size:(self.index + 1) * self.batch_size]})
-        self.eval = theano.function([self.index], self.cost,
+        self.eval = theano.function([self.index], self.predict,
             givens={
                 self.network_tester.input: self.train_set_x[self.index * self.batch_size:(self.index + 1) * self.batch_size],
-                self.network_tester.y_values: self.train_set_y[self.index * self.batch_size:(self.index + 1) * self.batch_size]})
+                self.network_tester.y_values: self.train_set_y[self.index * self.batch_size:(self.index + 1) * self.batch_size]},
+                on_unused_input='warn')
            # allocate symbolic variables for the data
 
     def learning_step(self, epoch):
@@ -49,7 +51,7 @@ class Gradient():
             self.learning_step(i)
 
 
-def main():
+def test_autoencoder_mlp():
     x = T.matrix('x')  # the data is presented as rasterized images
     y = T.matrix('y')  # the data is presented as rasterized images
     
@@ -73,5 +75,53 @@ def main():
     algo.loop(100)
 
 
+def main():
+    
+    print "building data"
+    data = np.zeros((60, 1, 16, 16), dtype="float32")
+    data_shape = data.shape
+    x = T.matrix('x')  # the data is presented as rasterized images
+    y = T.matrix('y')  # the data is presented as rasterized images
+    
+    # create a bunch of images with circle in the middle
+    for im in data:
+        for i in range(5):
+            for j in range(5):
+                if (i - 2) ** 2 + (j - 5) ** 2 < 25:
+                    im[0, i, j] = 1.0
+    data = data.reshape(data_shape[0], np.prod(data_shape[1:]))  # reshape in a matrix
+    print "done"
+    print data.shape
+    datay = T.shared(data.copy())
+    data = T.shared(data)
+
+    filter_shape = (2, 1, 8, 8)
+    poolsize = (1, 1)
+    pooling_on = False
+    encode = True
+    
+    learning_rate = 0.004
+    batch_size = 20
+    image_shape = list(data_shape)
+    image_shape[0] = batch_size
+    image_shape = tuple(image_shape)
+    
+    print  "building Net"
+    layer_builder = [LayerBuilder(LeNetConvPoolLayer, (filter_shape, image_shape, poolsize), (None, None), (pooling_on, encode))]
+    builder = AutoEncoderBuilder(layer_builder)
+    network = builder.get_network(x, image_shape)
+    tester = NetworkTester(network, y)
+    print "...done"
+    
+    print network
+    print  "..building trainer"
+
+    batch_size = 20
+    algo = Gradient((data, datay), tester, learning_rate)
+    print "   ... done"
+    algo.loop(30000)
+
+
 if __name__ == "__main__":
+    #test_autoencoder_mlp()
     main()

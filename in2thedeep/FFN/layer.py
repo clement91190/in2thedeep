@@ -32,15 +32,21 @@ class Layer():
 
 
 class LayerBuilder():
-    def __init__(self, layer_constructor, architecture, params):
+    def __init__(self, layer_constructor, architecture, params, mode=None):
         self.architecture = architecture
         self.params = params
         self.layer_constructor = layer_constructor
+        print "Layer :", layer_constructor
+        self.mode = mode
 
     def get_layer(self, input):
-        return self.layer_constructor(input, self.architecture, self.params)
+        if self.mode is None:
+            return self.layer_constructor(input, self.architecture, self.params)
+        else:
+            return self.layer_constructor(input, self.architecture, self.params, self.mode)
     
     def input_structure(self):
+        print  self.layer_constructor
         return self.layer_constructor.input_structure()
 
 

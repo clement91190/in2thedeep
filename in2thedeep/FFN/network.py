@@ -9,16 +9,17 @@ class FFNetwork():
         self.layers = []
         self.input = input
         self.params = []
-        self.output = input
+        self.output = input.flatten(2)
         self.dataset_shape = dataset_shape
         self.temp_type = input_type  
         
         self.reshape_mapping = {
-            ("matrix", "tensor4"): lambda input, shape: input.reshape(*shape),
+            ("matrix", "tensor4"): lambda input, shape: input.reshape(shape),
             ("tensor4", "matrix"): lambda input, shape: input.flatten(2)
         }
 
         for layer_builder in list_of_layers_builder:
+            print layer_builder.layer_constructor
             self.add_layer(layer_builder)
 
     def save_model(self, path='model.tkl'):
@@ -45,7 +46,7 @@ class FFNetwork():
         self.layers.append(layer)
         for param in self.layers[-1].params:
             self.params.append(param)
-        self.output = self.layers[-1].output
+        self.output = self.layers[-1].output.flatten(2)  #output always matrix !
 
     def union(self, network2_builder):
         """ connect one network to another """
@@ -68,7 +69,7 @@ class NetworkTester():
         self.y_values = y_values
         self.input = self.network.input
 
-    def get_cost_updates(self, learning_rate=0.1, method="cross"):
+    def get_cost_updates(self, learning_rate=0.1, method="rmse"):
 #TODO change this to do the grad someplace else
         cost = self.get_cost(method)
         print "cost type", type(cost)
@@ -80,10 +81,15 @@ class NetworkTester():
             updates.append((param, param - learning_rate * gparam))
         return (cost, updates)
 
-    def get_cost(self, method="cross"):
+    def get_cost(self, method="rmse"):
         y_pred = self.network.output
         if method == "cross":
             L = -T.sum(self.y_values * T.log(y_pred) + (1.0 - self.y_values) * T.log(1 - y_pred), axis=1)
+            cost = T.mean(L)
+        elif method == "rmse":
+            print "rmse"
+            print self.y_values
+            L = T.sqrt(T.mean(T.square(y_pred - self.y_values), axis=1))
             cost = T.mean(L)
         else:
             raise NotImplementedError("method not implemented -> use cross entropy error")
