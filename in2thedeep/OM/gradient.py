@@ -5,7 +5,6 @@ from theano.tensor.shared_randomstreams import RandomStreams
 from in2thedeep.FFN.layers.mlp_layer import HiddenLayerInfos
 from in2thedeep.FFN.layers.conv_layer import LeNetConvPoolLayerInfos
 from in2thedeep.FFN.network import NetworkTester, AutoEncoderBuilder 
-from in2thedeep.FFN.layer import LayerBuilder
 
 
 class Gradient():
@@ -77,9 +76,8 @@ def test_autoencoder_mlp():
         #'image_shape': list(self.layer_infos['output_shape'])
     }
 
-    layer_info = HiddenLayerInfos(infos)
-    layer_builders = [LayerBuilder(layer_info)]
-    network = AutoEncoderBuilder(layer_builders).get_network(x)
+    layer_infos = [HiddenLayerInfos(infos)]
+    network = AutoEncoderBuilder(layer_infos).get_network(x)
     tester = NetworkTester(network, y)
     print "...done"
     print network
@@ -127,14 +125,14 @@ def test_autoencoder_conv_net():
         'image_shape': image_shape
     }
 
-    layer_builders = [LayerBuilder(LeNetConvPoolLayerInfos(infos))]
-    builder = AutoEncoderBuilder(layer_builders)
+    layer_infos = [LeNetConvPoolLayerInfos(infos)]
+    builder = AutoEncoderBuilder(layer_infos)
     network = builder.get_network(x, image_shape)
     tester = NetworkTester(network, y)
     print "...done"
     
     print network
-    print  "..building trainer"
+    print "..building trainer"
 
     batch_size = 20
     algo = Gradient((data, datay), tester, learning_rate)
@@ -143,6 +141,6 @@ def test_autoencoder_conv_net():
 
 
 if __name__ == "__main__":
-    #test_autoencoder_mlp()
-    test_autoencoder_conv_net()
+    test_autoencoder_mlp()
+    #test_autoencoder_conv_net()
     #main()

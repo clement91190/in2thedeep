@@ -25,20 +25,6 @@ class Layer():
         raise NotImplementedError('must precise the shape of input')
 
 
-class LayerBuilder():
-    def __init__(self, layer_infos):
-        self.layer_constructor = layer_infos.infos['constructor']
-        print "Layer :", self.layer_constructor
-        self.layer_infos = layer_infos
-
-    def get_layer(self, input):
-        return self.layer_constructor(input, self.layer_infos)
-    
-    def input_structure(self):
-        print self.layer_constructor
-        return self.layer_constructor.input_structure()
-
-
 class LayerInfos():
     """class to inherit from when writing a new kind of layer,
     -> add assert statements to the parameters and default value 
@@ -52,10 +38,17 @@ class LayerInfos():
     def complete_infos(self):
         raise NotImplementedError('Check the information you get to the layer!')
 
-    def get_params(self):
+    def get_infos(self):
         self.complete_infos()
         return self.infos
 
+    def get_layer(self, input):
+        return self.infos['constructor'](input, self.get_infos())
+
     def __str__(self):
         raise NotImplementedError("no string")
+
+    def get_input_structure(self):
+        return self.infos['input_structure']
+
 

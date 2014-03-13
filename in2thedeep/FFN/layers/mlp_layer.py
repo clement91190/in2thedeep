@@ -1,4 +1,4 @@
-from in2thedeep.FFN.layer import Layer, LayerBuilder, LayerInfos
+from in2thedeep.FFN.layer import Layer, LayerInfos
 import theano.tensor as T
 import theano
 import numpy as np
@@ -20,6 +20,7 @@ class HiddenLayerInfos(LayerInfos):
         if self.infos.get('dropout_test') is None:
             self.infos['dropout_test'] = False
         self.infos['constructor'] = HiddenLayer
+        self.infos['input_structure'] = 'matrix' 
 
     def complete_infos(self):
         if self.infos.get('W') is None:
@@ -57,7 +58,7 @@ class HiddenLayer(Layer):
         """
             W and b are shared variables
         """
-        self.layer_infos = layer_infos.get_params()
+        self.layer_infos = layer_infos
 
         self.W = theano.shared(self.layer_infos['W'], borrow=True)
         self.b = theano.shared(self.layer_infos['b'], borrow=True)
@@ -83,7 +84,7 @@ class HiddenLayer(Layer):
             'W': self.W.get_value().T,  # we export W but not b
         }
         layer_info = HiddenLayerInfos(infos)
-        return LayerBuilder(layer_info)
+        return layer_info
 
     def get_infos(self):
         self.layer_infos['W'] = self.W.get_value()

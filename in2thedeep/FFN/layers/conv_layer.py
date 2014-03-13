@@ -3,7 +3,7 @@ from theano.tensor.nnet import conv
 from theano.tensor.signal import downsample
 import theano
 import theano.tensor as T
-from in2thedeep.FFN.layer import Layer, LayerBuilder, LayerInfos
+from in2thedeep.FFN.layer import Layer, LayerInfos
 
 
 class LeNetConvPoolLayerInfos(LayerInfos):
@@ -31,6 +31,7 @@ class LeNetConvPoolLayerInfos(LayerInfos):
             self.infos['border_mode'] = "valid"  # full or valid parameter of convolution
 
         self.infos['constructor'] = LeNetConvPoolLayer
+        self.infos['input_structure'] = 'tensor4'
         assert(self.infos.get('filter_shape') is not None)
         assert(self.infos.get('image_shape') is not None)
         #assert(self.infos.get('poolsize') is not None)
@@ -72,7 +73,8 @@ class LeNetConvPoolLayer(Layer):
         Allocate a LeNetConvPoolLayer with shared variable internal parameters.
         :type input: theano.tensor.dtensor4
         """
-        self.layer_infos = layer_infos.get_params()
+        self.layer_infos = layer_infos
+        print self.layer_infos
         self.input = input
 
         self.W = theano.shared(value=self.layer_infos['W'], name='W')
@@ -105,13 +107,9 @@ class LeNetConvPoolLayer(Layer):
         }
 
         assert(not self.layer_infos['pooling_on'])  # for autoencode Max pooling needs to be deactivated
-        return LayerBuilder(LeNetConvPoolLayerInfos(infos))
+        return LeNetConvPoolLayerInfos(infos)
 
     def get_infos(self):
         self.layer_infos['W'] = self.W.get_value()
         self.layer_infos['b'] = self.b.get_value()
         return LeNetConvPoolLayerInfos(self.layer_infos)
-
-    @staticmethod
-    def input_structure():
-        return "tensor4"
