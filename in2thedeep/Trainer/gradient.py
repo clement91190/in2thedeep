@@ -106,9 +106,7 @@ def test_autoencoder_conv_net():
     data = T.shared(data)
 
     filter_shape = (2, 1, 8, 8)
-    poolsize = (1, 1)
-    pooling_on = False
-    encode = True
+    #poolsize = (1, 1)
     
     learning_rate = 0.004
     batch_size = 20
@@ -116,9 +114,19 @@ def test_autoencoder_conv_net():
     image_shape[0] = batch_size
     image_shape = tuple(image_shape)
     
-    print  "building Net"
-    layer_builder = [LayerBuilder(LeNetConvPoolLayer, (filter_shape, image_shape, poolsize), (None, None), (pooling_on, encode))]
-    builder = AutoEncoderBuilder(layer_builder)
+    print "building Net"
+    infos = {
+        #'W':  self.W.get_value().transpose(1, 0, 3, 2),
+        #'b': np.zeros((self.filter_shape[1],), dtype=theano.config.floatX),
+        #'activation': self.layer_infos['activation'],
+        'pooling_on': False,
+        'border_mode': 'valid',
+        'filter_shape':  (2, 1, 8, 8),
+        'image_shape': image_shape
+    }
+
+    layer_builders = [LayerBuilder(LeNetConvPoolLayer, LeNetConvPoolLayerInfos(infos))]
+    builder = AutoEncoderBuilder(layer_builders)
     network = builder.get_network(x, image_shape)
     tester = NetworkTester(network, y)
     print "...done"
@@ -133,5 +141,6 @@ def test_autoencoder_conv_net():
 
 
 if __name__ == "__main__":
-    test_autoencoder_mlp()
+    #test_autoencoder_mlp()
+    test_autoencoder_conv_net()
     #main()
