@@ -33,41 +33,37 @@ class LeNetConvPoolLayerInfos(LayerInfos):
 
         assert(self.infos.get('filter_shape') is not None)
         assert(self.infos.get('image_shape') is not None)
-        assert(self.infos.get('poolsize') is not None)
+        #assert(self.infos.get('poolsize') is not None)
 
         assert self.infos['image_shape'][1] == self.infos['filter_shape'][1]
 
     def complete_infos(self):
-        fan_in = np.prod(self.filter_shape[1:])
+        fan_in = np.prod(self.infos['filter_shape'][1:])
                 # the bias is a 1D tensor -- one bias per output feature map
 
         if self.infos.get('W') is None:
             print """ random init """
-            assert(self.infos.get('n_in') is not None)
-            assert(self.infos.get('n_out') is not None)
 
             W = np.asarray(self.rng.uniform(
                 low=-np.sqrt(3. / fan_in),
                 high=np.sqrt(3. / fan_in),
-                size=self.filter_shape), dtype=theano.config.floatX)
+                size=self.infos['filter_shape']), dtype=theano.config.floatX)
 
             self.infos['W'] = W
 
-        if self.infos.get['b'] is None:
+        if self.infos.get('b') is None:
             b = np.zeros((self.infos['filter_shape'][0],), dtype=theano.config.floatX)
             self.infos['b'] = b
 
-        if self.infos.get('n_in') is None:
-            raise NotImplementedError(' recreating architecture from W and b is not done yet')
-
         output_shape = list(self.infos['image_shape'])
         output_shape[1] = self.infos['filter_shape'][0]
-        if self.infos.get['border_mode'] is "valid":
+        if self.infos['border_mode'] is "valid":
             output_shape[2] = self.infos['image_shape'][2] - self.infos['filter_shape'][2] + 1
             output_shape[3] = self.infos['image_shape'][3] - self.infos['filter_shape'][3] + 1
         else:
             output_shape[2] = self.infos['image_shape'][2] + self.infos['filter_shape'][2] - 1
             output_shape[3] = self.infos['image_shape'][3] + self.infos['filter_shape'][3] - 1
+        self.infos['output_shape'] = output_shape
 
 
 class LeNetConvPoolLayer(Layer):
@@ -79,11 +75,14 @@ class LeNetConvPoolLayer(Layer):
         self.layer_infos = layer_infos.get_params()
         self.input = input
 
-
         self.W = theano.shared(value=self.layer_infos['W'], name='W')
         self.b = theano.shared(value=self.layer_infos['b'], name='b')
 
-        conv_out = conv.conv2d(input, self.W, border_mode=self.layer_infos['border_mode'], filter_shape=self.filter_shape, image_shape=self.image_shape)
+        conv_out = conv.conv2d(
+            input, self.W,
+            border_mode=self.layer_infos['border_mode'],
+            filter_shape=self.layer_infos['filter_shape'],
+            image_shape=self.layer_infos['image_shape'])
 
         if self.layer_infos['pooling_on']:
             pooled_out = downsample.max_pool_2d(conv_out, self.poolsize, ignore_border=True)
@@ -99,7 +98,7 @@ class LeNetConvPoolLayer(Layer):
         fshape = self.layer_infos['filter_shape']
         infos = {
             'W':  self.W.get_value().transpose(1, 0, 3, 2),
-            'b': np.zeros((self.filter_shape[1],), dtype=theano.config.floatX),
+            'b': np.zeros((self.layer_infos['filter_shape'][1],), dtype=theano.config.floatX),
             'activation': self.layer_infos['activation'],
             'pooling_on': False,
             'border_mode': 'full',
