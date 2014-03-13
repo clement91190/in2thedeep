@@ -2,8 +2,8 @@ import numpy as np
 import theano
 import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
-from in2thedeep.FFN.layers.mlp_layer import HiddenLayer
-from in2thedeep.FFN.layers.conv_layer import LeNetConvPoolLayer
+from in2thedeep.FFN.layers.mlp_layer import HiddenLayer, HiddenLayerInfos
+from in2thedeep.FFN.layers.conv_layer import LeNetConvPoolLayer, LeNetConvPoolLayerInfos
 from in2thedeep.FFN.network import NetworkTester, AutoEncoderBuilder 
 from in2thedeep.FFN.layer import LayerBuilder
 
@@ -61,12 +61,22 @@ def test_autoencoder_mlp():
     dataset_x = T.shared(dataset_x) 
     dataset_x = T.shared(dataset_y) 
     datasets = (dataset_x, dataset_x)
-    n_in = 10
-    n_out = 2
 
-    print  "building Net"
-    layer_builder = [LayerBuilder(HiddenLayer, (n_in, n_out, None), (None, None))]
-    network = AutoEncoderBuilder(layer_builder).get_network(x)
+    print "building Net"
+
+    infos = {
+        #'W':  self.W.get_value().transpose(1, 0, 3, 2),
+        #'b': np.zeros((self.filter_shape[1],), dtype=theano.config.floatX),
+        #'activation': self.layer_infos['activation'],
+        'n_in': 10,
+        'n_out': 2,
+        #'filter_shape': [fshape[1], fshape[0], fshape[2], fshape[3]],
+        #'image_shape': list(self.layer_infos['output_shape'])
+    }
+
+    layer_info = HiddenLayerInfos(infos)
+    layer_builders = [LayerBuilder(HiddenLayer, layer_info)]
+    network = AutoEncoderBuilder(layer_builders).get_network(x)
     tester = NetworkTester(network, y)
     print "...done"
     print network
@@ -75,7 +85,7 @@ def test_autoencoder_mlp():
     algo.loop(100)
 
 
-def main():
+def test_autoencoder_conv_net():
     
     print "building data"
     data = np.zeros((60, 1, 16, 16), dtype="float32")
@@ -123,5 +133,5 @@ def main():
 
 
 if __name__ == "__main__":
-    #test_autoencoder_mlp()
-    main()
+    test_autoencoder_mlp()
+    #main()

@@ -6,15 +6,12 @@ class Layer():
     def __init__(self, input, layer_infos):
         self.input = input
         self.params = layer_infos.get_params()
-   
-    def random_init(self, architecture):
-        raise NotImplementedError('random initialization')
-
+    
     def get_symmetric_builder(self):
         raise NotImplementedError('construct symmetric layer')
 
     def __str__(self):
-        return "{}".format(self.architecture)
+        return self.params.__str__()
 
     @staticmethod
     def input_structure():
@@ -31,7 +28,7 @@ class LayerBuilder():
         self.layer_infos = layer_infos
 
     def get_layer(self, input):
-        return self.layer_constructor(input, self.architecture, self.layer_infos)
+        return self.layer_constructor(input, self.layer_infos)
     
     def input_structure(self):
         print self.layer_constructor
@@ -54,4 +51,7 @@ class LayerInfos():
     def get_params(self):
         self.complete_infos()
         return self.infos
+
+    def __str__(self):
+        raise NotImplementedError("no string")
 

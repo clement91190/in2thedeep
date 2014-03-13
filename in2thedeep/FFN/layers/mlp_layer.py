@@ -6,6 +6,7 @@ import numpy as np
 
 class HiddenLayerInfos(LayerInfos):
     def __init__(self, dict=None):
+        self.rng = np.random.RandomState(1234)
         if dict is None:
             raise NotImplementedError("Need at least an architecture")
         self.infos = dict
@@ -24,17 +25,23 @@ class HiddenLayerInfos(LayerInfos):
                 low=-np.sqrt(6. / (n_in + n_out)),
                 high=np.sqrt(6. / (n_in + n_out)),
                 size=(n_in, n_out)), dtype=theano.config.floatX)
-            if self.activation == theano.tensor.nnet.sigmoid:
+            if self.infos['activation'] == theano.tensor.nnet.sigmoid:
                 W *= 4
 
             self.infos['W'] = W
 
-        if self.infos.get['b'] is None:
+        if self.infos.get('b') is None:
             b = np.zeros(self.infos['n_out'], dtype=theano.config.floatX)
             self.infos['b'] = b
 
         if self.infos.get('n_in') is None:
             raise NotImplementedError(' recreating architecture from W and b is not done yet')
+
+    def __str__(self):
+        return """ Multi Perception Layer :
+            n_in : {}
+            n_out : {}
+            """.format(self.infos['n_in'], self.infos['n_out'])
 
 
 class HiddenLayer(Layer):
@@ -43,12 +50,11 @@ class HiddenLayer(Layer):
             W and b are shared variables
         """
         self.layer_infos = layer_infos.get_params()
-        self.rng = np.random.RandomState(1234)
 
         self.W = theano.shared(self.layer_infos['W'], borrow=True)
         self.b = theano.shared(self.layer_infos['b'], borrow=True)
 
-        self.output = self.activation(T.dot(input, self.W) + self.b)
+        self.output = self.layer_infos['activation'](T.dot(input, self.W) + self.b)
         self.params = [self.W, self.b]
 
     def get_symmetric_builder(self):
@@ -61,6 +67,9 @@ class HiddenLayer(Layer):
         }
         layer_info = HiddenLayerInfos(infos)
         return LayerBuilder(layer_constructor, layer_info)
+
+    def __str__(self):
+        return HiddenLayerInfos(self.layer_infos).__str__()
 
     @staticmethod
     def input_structure():

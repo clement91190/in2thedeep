@@ -54,7 +54,7 @@ class FFNetwork():
             self.add_layer(layer_builder)
 
     def __str__(self):
-        res = "#######Architecture#######"
+        res = "#######Architecture#######\n "
         for layer in self.layers:
             res += layer.__str__()
             res += "\n" + "           //||\\        \n"

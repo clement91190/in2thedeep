@@ -20,6 +20,7 @@ class LeNetConvPoolLayerInfos(LayerInfos):
         : param pooling_on: bool to do or not the max_pooling step
        """
 
+        self.rng = np.random.RandomState(1234)
         if dict is None:
             raise NotImplementedError("Need at least an architecture")
         self.infos = dict
@@ -78,7 +79,6 @@ class LeNetConvPoolLayer(Layer):
         self.layer_infos = layer_infos.get_params()
         self.input = input
 
-        self.rng = np.random.RandomState(1234)
 
         self.W = theano.shared(value=self.layer_infos['W'], name='W')
         self.b = theano.shared(value=self.layer_infos['b'], name='b')
