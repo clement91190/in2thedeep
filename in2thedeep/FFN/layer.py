@@ -3,17 +3,10 @@ from exceptions import NotImplementedError
 
 
 class Layer():
-    def __init__(self, input, architecture, params=None):
+    def __init__(self, input, layer_infos):
         self.input = input
-        if params is None:
-            if architecture is None:
-                raise(Exception('no parameters nor architecture given'))
-            self.architecture = architecture    
-            self.params = self.random_init(architecture)
-        else:
-            self.params = params
-            #self.architecture = self.get_architecture_from_params()
-
+        self.params = layer_infos.get_params()
+   
     def random_init(self, architecture):
         raise NotImplementedError('random initialization')
 
@@ -32,21 +25,33 @@ class Layer():
 
 
 class LayerBuilder():
-    def __init__(self, layer_constructor, architecture, params, mode=None):
-        self.architecture = architecture
-        self.params = params
+    def __init__(self, layer_constructor, layer_infos):
         self.layer_constructor = layer_constructor
         print "Layer :", layer_constructor
-        self.mode = mode
+        self.layer_infos = layer_infos
 
     def get_layer(self, input):
-        if self.mode is None:
-            return self.layer_constructor(input, self.architecture, self.params)
-        else:
-            return self.layer_constructor(input, self.architecture, self.params, self.mode)
+        return self.layer_constructor(input, self.architecture, self.layer_infos)
     
     def input_structure(self):
-        print  self.layer_constructor
+        print self.layer_constructor
         return self.layer_constructor.input_structure()
 
+
+class LayerInfos():
+    """class to inherit from when writing a new kind of layer,
+    -> add assert statements to the parameters and default value 
+    to d. """
+    def init(self, dict={}):
+        self.infos = dict
+
+    def add_param(self, name, value):
+        self.infos[name] = value
+
+    def complete_infos(self):
+        raise NotImplementedError('Check the information you get to the layer!')
+
+    def get_params(self):
+        self.complete_infos()
+        return self.infos
 
