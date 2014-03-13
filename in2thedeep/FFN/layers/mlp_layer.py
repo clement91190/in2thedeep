@@ -6,12 +6,19 @@ import numpy as np
 
 class HiddenLayerInfos(LayerInfos):
     def __init__(self, dict=None):
+        """ keys of infos : W, b, activation, n_in, n_out, dropout, dropout_rate, dropout_test """
         self.rng = np.random.RandomState(1234)
         if dict is None:
             raise NotImplementedError("Need at least an architecture")
         self.infos = dict
         if self.infos.get('activation') is None:
             self.infos['activation'] = theano.tensor.nnet.sigmoid
+
+        if self.infos.get('dropout') is None:
+            self.infos['dropout'] = False
+
+        if self.infos.get('dropout_test') is None:
+            self.infos['dropout_test'] = False
 
     def complete_infos(self):
         if self.infos.get('W') is None:
@@ -54,9 +61,19 @@ class HiddenLayer(Layer):
         self.W = theano.shared(self.layer_infos['W'], borrow=True)
         self.b = theano.shared(self.layer_infos['b'], borrow=True)
 
+        self.rng = np.random.RandomState(1234)
+        self.srng = theano.tensor.shared_randomstreams.RandomStreams(
+            self.rng.randint(999999)) 
+        if self.layer_infos['dropout_test']:
+            self.W *= self.layer_infos['dropout_rate']  # mean for testing after dropout training TODO change this to make it possible during training
+                     
         self.output = self.layer_infos['activation'](T.dot(input, self.W) + self.b)
         self.params = [self.W, self.b]
-
+        
+        if self.layer_infos['dropout']:
+            mask = self.srng.binomial(n=1, p=1-self.layer_infos['dropout_rate'], size=self.output.shape)
+            self.output = self.output * T.cast(mask, theano.config.floatX)
+      
     def get_symmetric_builder(self):
         layer_constructor = HiddenLayer
         infos = {

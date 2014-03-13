@@ -70,6 +70,9 @@ def test_autoencoder_mlp():
         #'activation': self.layer_infos['activation'],
         'n_in': 10,
         'n_out': 2,
+        'dropout': True,
+        'dropout_rate': 0.5,
+
         #'filter_shape': [fshape[1], fshape[0], fshape[2], fshape[3]],
         #'image_shape': list(self.layer_infos['output_shape'])
     }
@@ -105,7 +108,6 @@ def test_autoencoder_conv_net():
     datay = T.shared(data.copy())
     data = T.shared(data)
 
-    filter_shape = (2, 1, 8, 8)
     #poolsize = (1, 1)
     
     learning_rate = 0.004
@@ -141,6 +143,6 @@ def test_autoencoder_conv_net():
 
 
 if __name__ == "__main__":
-    #test_autoencoder_mlp()
-    test_autoencoder_conv_net()
+    test_autoencoder_mlp()
+    #test_autoencoder_conv_net()
     #main()
