@@ -77,7 +77,8 @@ def test_autoencoder_mlp():
         #'image_shape': list(self.layer_infos['output_shape'])
     }
 
-    layer_builders = [LayerBuilder(HiddenLayerInfos(infos))]
+    layer_info = HiddenLayerInfos(infos)
+    layer_builders = [LayerBuilder(layer_info)]
     network = AutoEncoderBuilder(layer_builders).get_network(x)
     tester = NetworkTester(network, y)
     print "...done"
@@ -142,6 +143,6 @@ def test_autoencoder_conv_net():
 
 
 if __name__ == "__main__":
-    test_autoencoder_mlp()
-    #test_autoencoder_conv_net()
+    #test_autoencoder_mlp()
+    test_autoencoder_conv_net()
     #main()

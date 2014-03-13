@@ -13,6 +13,10 @@ class Layer():
     def __str__(self):
         return self.params.__str__()
 
+    def get_infos(self):
+        """ for saving the model """
+        raise NotImplementedError(" return the information to build a layer (for saving)")
+
     @staticmethod
     def input_structure():
         """ describe the shape of the input 
@@ -22,9 +26,9 @@ class Layer():
 
 
 class LayerBuilder():
-    def __init__(self, layer_constructor, layer_infos):
-        self.layer_constructor = layer_constructor
-        print "Layer :", layer_constructor
+    def __init__(self, layer_infos):
+        self.layer_constructor = layer_infos.infos['constructor']
+        print "Layer :", self.layer_constructor
         self.layer_infos = layer_infos
 
     def get_layer(self, input):

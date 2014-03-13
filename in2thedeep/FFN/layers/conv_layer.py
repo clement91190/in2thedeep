@@ -19,7 +19,6 @@ class LeNetConvPoolLayerInfos(LayerInfos):
         :param poolsize: the downsampling (pooling) factor (#rows,#cols)
         : param pooling_on: bool to do or not the max_pooling step
        """
-
         self.rng = np.random.RandomState(1234)
         if dict is None:
             raise NotImplementedError("Need at least an architecture")
@@ -31,6 +30,7 @@ class LeNetConvPoolLayerInfos(LayerInfos):
         if self.infos.get('border_mode') is None:
             self.infos['border_mode'] = "valid"  # full or valid parameter of convolution
 
+        self.infos['constructor'] = LeNetConvPoolLayer
         assert(self.infos.get('filter_shape') is not None)
         assert(self.infos.get('image_shape') is not None)
         #assert(self.infos.get('poolsize') is not None)
@@ -93,8 +93,6 @@ class LeNetConvPoolLayer(Layer):
         self.params = [self.W, self.b]
 
     def get_symmetric_builder(self):
-        layer_constructor = LeNetConvPoolLayer
-        #print self.W.get_value().shape
         fshape = self.layer_infos['filter_shape']
         infos = {
             'W':  self.W.get_value().transpose(1, 0, 3, 2),
@@ -107,7 +105,12 @@ class LeNetConvPoolLayer(Layer):
         }
 
         assert(not self.layer_infos['pooling_on'])  # for autoencode Max pooling needs to be deactivated
-        return LayerBuilder(layer_constructor, LeNetConvPoolLayerInfos(infos))
+        return LayerBuilder(LeNetConvPoolLayerInfos(infos))
+
+    def get_infos(self):
+        self.layer_infos['W'] = self.W.get_value()
+        self.layer_infos['b'] = self.b.get_value()
+        return LeNetConvPoolLayerInfos(self.layer_infos)
 
     @staticmethod
     def input_structure():

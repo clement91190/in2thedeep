@@ -19,6 +19,7 @@ class HiddenLayerInfos(LayerInfos):
 
         if self.infos.get('dropout_test') is None:
             self.infos['dropout_test'] = False
+        self.infos['constructor'] = HiddenLayer
 
     def complete_infos(self):
         if self.infos.get('W') is None:
@@ -75,7 +76,6 @@ class HiddenLayer(Layer):
             self.output = self.output * T.cast(mask, theano.config.floatX)
       
     def get_symmetric_builder(self):
-        layer_constructor = HiddenLayer
         infos = {
             'n_in': self.layer_infos['n_out'],
             'n_out': self.layer_infos['n_in'],
@@ -83,7 +83,12 @@ class HiddenLayer(Layer):
             'W': self.W.get_value().T,  # we export W but not b
         }
         layer_info = HiddenLayerInfos(infos)
-        return LayerBuilder(layer_constructor, layer_info)
+        return LayerBuilder(layer_info)
+
+    def get_infos(self):
+        self.layer_infos['W'] = self.W.get_value()
+        self.layer_infos['b'] = self.b.get_value()
+        return HiddenLayerInfos(self.layer_infos)
 
     def __str__(self):
         return HiddenLayerInfos(self.layer_infos).__str__()
