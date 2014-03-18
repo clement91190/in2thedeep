@@ -23,8 +23,9 @@ class FFNetwork():
             self.add_layer(layer_infos)
 
     def save_model(self, path='model.tkl'):
+        list_of_layers_infos = [layer.get_infos() for layer in self.layers]
         with open(path) as f:
-            cPickle.dump(self.params, f)
+            cPickle.dump(list_of_layers_infos, f)
 
     def get_symmetric_infos(self):
         """ construct the symetric of a Network """
@@ -64,10 +65,11 @@ class FFNetwork():
 
 class NetworkTester():
     """ get errors function for layer """
-    def __init__(self, network, y_values):
+    def __init__(self, network, y_values, path='model.tkl'):
         self.network = network
         self.y_values = y_values
         self.input = self.network.input
+        self.saving_path = path
 
     def get_cost_updates(self, learning_rate=0.1, method="rmse"):
 #TODO change this to do the grad someplace else
@@ -80,6 +82,9 @@ class NetworkTester():
         for param, gparam in zip(self.network.params, gparams):
             updates.append((param, param - learning_rate * gparam))
         return (cost, updates)
+
+    def save(self):
+        self.network.save_model(self.saving_path)
 
     def get_cost(self, method="rmse"):
         y_pred = self.network.output

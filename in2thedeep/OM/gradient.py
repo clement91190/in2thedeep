@@ -4,10 +4,10 @@ import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 from in2thedeep.FFN.layers.mlp_layer import HiddenLayerInfos
 from in2thedeep.FFN.layers.conv_layer import LeNetConvPoolLayerInfos
-from in2thedeep.FFN.network import NetworkTester, AutoEncoderBuilder 
 
 
 class Gradient():
+#TODO change the constructor with Optim infos
     """ stochastic gradient,  """
     def __init__(self, datasets, network_tester, learning_rate=0.1, batch_size=20):
         self.learning_rate = learning_rate
@@ -45,6 +45,7 @@ class Gradient():
             #print self.eval(batch_index)
             c.append(self.train_net(batch_index))
         print 'Training epoch %d, cost ' % epoch, np.mean(c)
+        self.network_tester.save()
 
     def loop(self, n_epoch):
         for i in xrange(n_epoch):

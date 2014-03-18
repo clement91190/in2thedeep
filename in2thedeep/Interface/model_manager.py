@@ -5,7 +5,7 @@ from in2thedeep.FFN.network import NetworkTester
 
 class ModelManager:
     """ class to load and save model """
-    def __init__(self, path, network):
+    def __init__(self, path="model.tkl"):
         self.path = path
 
     def load(self):

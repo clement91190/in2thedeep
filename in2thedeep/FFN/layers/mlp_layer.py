@@ -93,8 +93,3 @@ class HiddenLayer(Layer):
 
     def __str__(self):
         return HiddenLayerInfos(self.layer_infos).__str__()
-
-    @staticmethod
-    def input_structure():
-#TODO add this into the layer infos
-        return "matrix"
