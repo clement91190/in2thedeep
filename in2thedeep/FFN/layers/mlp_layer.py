@@ -76,7 +76,7 @@ class HiddenLayer(Layer):
             mask = self.srng.binomial(n=1, p=1-self.layer_infos['dropout_rate'], size=self.output.shape)
             self.output = self.output * T.cast(mask, theano.config.floatX)
       
-    def get_symmetric_builder(self):
+    def get_symmetric_infos(self):
         infos = {
             'n_in': self.layer_infos['n_out'],
             'n_out': self.layer_infos['n_in'],

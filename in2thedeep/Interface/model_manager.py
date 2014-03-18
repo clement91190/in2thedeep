@@ -4,6 +4,7 @@ from in2thedeep.FFN.network import NetworkTester
 
 
 class ModelManager:
+    """ class to load and save model """
     def __init__(self, path, network):
         self.path = path
 
@@ -15,4 +16,10 @@ class ModelManager:
         with open(self.path, 'w') as fich:
             pickle.dump(self.path, fich)
 
+    def save_under(self, path):
+        self.path = path
+        self.save()
+            
+    def __str__(self):
+        return self.nework_infos.__str__()
 

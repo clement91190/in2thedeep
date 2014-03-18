@@ -94,7 +94,7 @@ class LeNetConvPoolLayer(Layer):
         self.output = self.layer_infos['activation'](pooled_out + self.b.dimshuffle('x', 0, 'x', 'x'))
         self.params = [self.W, self.b]
 
-    def get_symmetric_builder(self):
+    def get_symmetric_infos(self):
         fshape = self.layer_infos['filter_shape']
         infos = {
             'W':  self.W.get_value().transpose(1, 0, 3, 2),

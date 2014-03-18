@@ -26,9 +26,9 @@ class FFNetwork():
         with open(path) as f:
             cPickle.dump(self.params, f)
 
-    def get_symmetric_builder(self):
+    def get_symmetric_infos(self):
         """ construct the symetric of a Network """
-        return FFNetworkBuilder([layer.get_symmetric_builder() for layer in reversed(self.layers)])
+        return [layer.get_symmetric_infos() for layer in reversed(self.layers)]
 
     def add_layer(self, layer_infos):
         try:
@@ -97,20 +97,4 @@ class NetworkTester():
 
     def predict(self):
         return self.network.output
-    
-
-class FFNetworkBuilder():
-    def __init__(self, list_of_layers_infos):
-        self.list_of_layers_infos = list_of_layers_infos
-
-    def get_network(self, input, dataset_shape=(1, 1, 32, 32), input_type='matrix'):
-        return FFNetwork(input, self.list_of_layers_infos, dataset_shape, input_type)
-
-
-class AutoEncoderBuilder(FFNetworkBuilder):
-    """ construct a Autoencoder from any Network """
-    def get_network(self, input, dataset_shape=(1, 1, 32, 32), input_type='matrix'):
-        net = FFNetwork(input, self.list_of_layers_infos, dataset_shape, input_type)
-        net.union(net.get_symmetric_builder())
-        return net
-
+   

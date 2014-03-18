@@ -8,6 +8,7 @@ from in2thedeep.FFN.network import NetworkTester, AutoEncoderBuilder
 
 
 class Gradient():
+    """ stochastic gradient,  """
     def __init__(self, datasets, network_tester, learning_rate=0.1, batch_size=20):
         self.learning_rate = learning_rate
         self.network_tester = network_tester

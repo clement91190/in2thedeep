@@ -7,7 +7,7 @@ class Layer():
         self.input = input
         self.params = layer_infos.get_params()
     
-    def get_symmetric_builder(self):
+    def get_symmetric_infos(self):
         raise NotImplementedError('construct symmetric layer')
 
     def __str__(self):
