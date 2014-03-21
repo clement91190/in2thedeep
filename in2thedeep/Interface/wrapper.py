@@ -1,4 +1,5 @@
 from in2thedeep.OM.optim_infos import OptimInfos
+import numpy as np
 from in2thedeep.FFN.network import NetworkTester
 import theano.tensor as T
 import theano
@@ -23,11 +24,11 @@ class Wrapper():
         x = T.matrix('x')
         y = T.matrix('y')
    
-        if y is None:
+        if Y is None:
             print "no y given -> training autoencoder"
             self.net = self.network_architect.build_autoencoder(x) 
             dataset_x = X
-            dataset_y = X
+            dataset_y = X #np.copy(X)
         else:
             print "building net ..."
             self.net = self.network_architect.build_network(x) 

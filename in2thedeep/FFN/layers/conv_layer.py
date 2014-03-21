@@ -38,6 +38,12 @@ class LeNetConvPoolLayerInfos(LayerInfos):
 
         assert self.infos['image_shape'][1] == self.infos['filter_shape'][1]
 
+    def change_batch_size(self, batch_size):
+        shape = self.infos['image_shape']
+        shape = list(shape)
+        shape[0] = batch_size
+        self.infos['image_shape'] = tuple(shape)
+
     def complete_infos(self):
         fan_in = np.prod(self.infos['filter_shape'][1:])
                 # the bias is a 1D tensor -- one bias per output feature map
@@ -74,7 +80,7 @@ class LeNetConvPoolLayer(Layer):
         :type input: theano.tensor.dtensor4
         """
         self.layer_infos = layer_infos
-        print self.layer_infos
+        #print self.layer_infos
         self.input = input
 
         self.W = theano.shared(value=self.layer_infos['W'], name='W')

@@ -1,6 +1,13 @@
 from in2thedeep.Interface.network_architect import NetworkArchitect 
+import matplotlib.pyplot as plt
+import math
+from in2thedeep.OM.optim_infos import OptimInfos
+from PIL import Image
+from in2thedeep.FFN.network import NetworkTester
 import numpy as np
 from in2thedeep.Interface.wrapper import Wrapper
+import theano.tensor as T
+import theano
 
 
 def train():
@@ -31,25 +38,73 @@ def train():
         #'activation': self.layer_infos['activation'],
         'pooling_on': False,
         'border_mode': 'valid',
-        'filter_shape':  (2, 1, 8, 8),
+        'filter_shape':  (1, 1, 8, 8),
         'image_shape': image_shape
+    }
+
+    optim_infos = {
+        'method': 'gradient',
+        'learning_rate': 0.05,
+        'batch_size': 20,
+        'n_epochs': 6000
     }
 
     network_architect = NetworkArchitect()
     network_architect.add_conv_pool_layer(infos)
-    net_trainer = Wrapper(network_architect)
-    print data
-    raw_input()
+    net_trainer = Wrapper(network_architect, OptimInfos(optim_infos))
+    #print data
+    #raw_input()
     net_trainer.fit(data)
 
 
 def show_weight():
+
+    batch_size = 1
     network_architect = NetworkArchitect()
     network_architect.load_network()
     network_architect.from_autoencoder()
-    net = network_architect.build_weight_viewer()
-    print net
+    network_architect.change_batch_size(batch_size)
+    x = T.matrix('x')  # the data is presented as rasterized images
+    y = T.matrix('y')  # the data is presented as rasterized images
+    net = network_architect.build_weight_viewer(x)
 
+    print net
+    network_tester = NetworkTester(net, y)
+    print network_architect.dataset_shape
+    shape = network_architect.dataset_shape
+    size = np.prod(shape[1:])
+    print size
+    raw_input()
+    train_set_x = theano.shared(np.identity(size, dtype="float32"))
+    train_set_y = theano.shared(np.identity(size, dtype="float32"))
+
+    predict = network_tester.predict()
+    #tester.predict()
+    index = T.lscalar()    # index to a [mini]batch
+    eval = theano.function([index], predict,
+        givens={
+            network_tester.input: train_set_x[index * batch_size:(index + 1) * batch_size],
+            network_tester.y_values: train_set_y[index * batch_size:(index + 1) * batch_size]},
+            on_unused_input='warn')
+    n_weights = int(math.sqrt(size))
+    image = []
+    for i in range(n_weights):
+        im_temp = (eval(i).reshape((30, 30, 1)))
+        for j in range(1, n_weights):
+            im = eval(i * n_weights + j).reshape((30, 30, 1))
+            im_temp = np.concatenate((im, im_temp), 1)
+        image.append(im_temp)
+    im = np.concatenate(image, 0)
+
+    print "shape, ", im.shape
+    if im.shape[2] == 1:
+        im = im.reshape(im.shape[:2])
+    print im.shape
+    #    im = im.reshape((30, 30))
+    #im = Image.fromarray(np.uint8(255.0 * im))
+    plt.imshow(np.uint8(255.0 * im),cmap=plt.cm.gray)
+    plt.show()
 
 if __name__ == "__main__":
-    train()
+    #train()
+    show_weight()

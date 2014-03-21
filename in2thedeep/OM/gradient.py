@@ -15,7 +15,9 @@ class Gradient():
         self.batch_size = batch_size
         self.train_set_x, self.train_set_y = datasets
         # compute number of minibatches for training, validation and testing
-        self.n_train_batches = self.train_set_x.shape[0] / self.batch_size
+        print batch_size
+        print self.train_set_x
+        self.n_train_batches = int(self.train_set_x.get_value().shape[0] / self.batch_size)
         print self.n_train_batches
 
         self.rng = np.random.RandomState(123)
@@ -41,7 +43,7 @@ class Gradient():
         print "step"
         c = []
         #for batch_index in xrange(self.n_train_batches):
-        for batch_index in xrange(1):
+        for batch_index in xrange(self.n_train_batches - 1):
             #print self.eval(batch_index)
             c.append(self.train_net(batch_index))
         print 'Training epoch %d, cost ' % epoch, np.mean(c)

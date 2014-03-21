@@ -17,14 +17,14 @@ class FFNetwork():
             ("matrix", "tensor4"): lambda input, shape: input.reshape(shape),
             ("tensor4", "matrix"): lambda input, shape: input.flatten(2)
         }
-
+        print "Network depth , ", len(list_of_layers_infos)
         for layer_infos in list_of_layers_infos:
             print layer_infos.infos['constructor']
             self.add_layer(layer_infos)
 
     def save_model(self, path='model.tkl'):
         list_of_layers_infos = [layer.get_infos() for layer in self.layers]
-        with open(path) as f:
+        with open(path, 'w') as f:
             cPickle.dump(list_of_layers_infos, f)
 
     def get_symmetric_infos(self):
@@ -39,7 +39,7 @@ class FFNetwork():
 
         #potential reshaping
         next_type = layer_infos.get_input_structure()
-        if self.temp_type != next_type :
+        if self.temp_type != next_type:
             temp_input = self.reshape_mapping[(self.temp_type, next_type)](temp_input, self.dataset_shape)
             self.temp_type = next_type
         
@@ -47,11 +47,11 @@ class FFNetwork():
         self.layers.append(layer)
         for param in self.layers[-1].params:
             self.params.append(param)
-        self.output = self.layers[-1].output.flatten(2)  #output always matrix !
+        self.output = self.layers[-1].output.flatten(2)  # output always matrix !
 
     def union(self, network2_infos):
         """ connect one network to another """
-        for layer_infos in network2_infos.list_of_layers_infos:
+        for layer_infos in network2_infos:
             self.add_layer(layer_infos)
 
     def __str__(self):
@@ -74,9 +74,9 @@ class NetworkTester():
     def get_cost_updates(self, learning_rate=0.1, method="rmse"):
 #TODO change this to do the grad someplace else
         cost = self.get_cost(method)
-        print "cost type", type(cost)
+        print "cost type", method
 
-        print " params type", type(self.network.params[0])
+        #print " params type", type(self.network.params[0])
         gparams = T.grad(cost, self.network.params)
         updates = []
         for param, gparam in zip(self.network.params, gparams):

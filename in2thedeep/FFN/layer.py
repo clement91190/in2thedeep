@@ -41,6 +41,9 @@ class LayerInfos():
     def get_infos(self):
         self.complete_infos()
         return self.infos
+    
+    def change_batch_size(batch_size):
+        pass
 
     def get_layer(self, input):
         return self.infos['constructor'](input, self.get_infos())
