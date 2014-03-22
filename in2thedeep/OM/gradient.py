@@ -9,16 +9,27 @@ from in2thedeep.FFN.layers.conv_layer import LeNetConvPoolLayerInfos
 class Gradient():
 #TODO change the constructor with Optim infos
     """ stochastic gradient,  """
-    def __init__(self, datasets, network_tester, learning_rate=0.1, batch_size=20):
+    def __init__(self, (train_set, valid_set, test_set), network_tester, learning_rate=0.1, batch_size=20):
         self.learning_rate = learning_rate
         self.network_tester = network_tester
         self.batch_size = batch_size
-        self.train_set_x, self.train_set_y = datasets
+
+        self.valid = valid_set is not None
+        self.test = test_set is not None
+
+
+        self.train_set_x, self.train_set_y = train_set
+        if self.valid:
+            self.valid_set_x, self.valid_set_y = valid_set
+        if self.test:
+            self.test_set_x, self.test_set_y = test_set
         # compute number of minibatches for training, validation and testing
         print batch_size
-        print self.train_set_x
+        #print self.train_set_x
         self.n_train_batches = int(self.train_set_x.get_value().shape[0] / self.batch_size)
-        print self.n_train_batches
+        self.n_valid = int(self.valid_set_x.get_value().shape[0] / self.batch_size)
+        self.n_test = int(self.test_set_x.get_value().shape[0] / self.batch_size)
+        #print self.n_train_batches
 
         self.rng = np.random.RandomState(123)
         self.theano_rng = RandomStreams(self.rng.randint(2 ** 30))
@@ -32,11 +43,24 @@ class Gradient():
             givens={
                 self.network_tester.input: self.train_set_x[self.index * self.batch_size:(self.index + 1) * self.batch_size],
                 self.network_tester.y_values: self.train_set_y[self.index * self.batch_size:(self.index + 1) * self.batch_size]})
-        self.eval = theano.function([self.index], self.predict,
+        if self.valid: 
+            self.valid_net = theano.function(
+                [self.index], self.cost,
+                givens={
+                    self.network_tester.input: self.valid_set_x[self.index * self.batch_size:(self.index + 1) * self.batch_size],
+                    self.network_tester.y_values: self.valid_set_y[self.index * self.batch_size:(self.index + 1) * self.batch_size]})
+        if self.test:
+            self.test_net = theano.function(
+                [self.index], self.cost,
+                givens={
+                    self.network_tester.input: self.test_set_x[self.index * self.batch_size:(self.index + 1) * self.batch_size],
+                    self.network_tester.y_values: self.test_set_y[self.index * self.batch_size:(self.index + 1) * self.batch_size]})
+        self.eval = theano.function(
+            [self.index], self.predict,
             givens={
                 self.network_tester.input: self.train_set_x[self.index * self.batch_size:(self.index + 1) * self.batch_size],
                 self.network_tester.y_values: self.train_set_y[self.index * self.batch_size:(self.index + 1) * self.batch_size]},
-                on_unused_input='warn')
+            on_unused_input='warn')
            # allocate symbolic variables for the data
 
     def learning_step(self, epoch):
@@ -46,7 +70,13 @@ class Gradient():
         for batch_index in xrange(self.n_train_batches):
             #print "eval",  self.eval(batch_index)
             c.append(self.train_net(batch_index))
-        print 'Training epoch %d, cost ' % epoch, np.mean(c)
+            if batch_index % 50 == 0:
+                print 'In the middle of Training epoch %d, cost on train' % epoch, np.mean(c)
+        print 'Training epoch %d, cost on train' % epoch, np.mean(c)
+        if self.valid:
+            print 'valid', self.valid_net(0)
+        if self.test:
+            print 'test', self.test_net(0)
         self.network_tester.save()
 
     def loop(self, n_epoch):

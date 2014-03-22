@@ -40,6 +40,8 @@ class NetworkArchitect():
     def load_network(self, path="model.tkl"):
         with open(path, 'r') as fich:
             self.list_of_layers_infos = pickle.load(fich)
+        self.dataset_shape = self.list_of_layers_infos[0].infos['image_shape']
+     
 
     def change_batch_size(self, batch_size=1):
         """ use this before creating the network ! """

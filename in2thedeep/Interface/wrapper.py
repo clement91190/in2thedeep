@@ -14,7 +14,7 @@ class Wrapper():
         self.network_architect = network_architect
         self.optim_infos = optim_infos
 
-    def fit(self, X, Y=None):
+    def fit(self, X, Y=None, valid_set=None, test_set=None):
         """ train the algorithm """
         try:
             assert(self.network_architect is not None)
@@ -37,8 +37,17 @@ class Wrapper():
         
         dataset_x = theano.shared(dataset_x) 
         dataset_y = theano.shared(dataset_y) 
+        if valid_set is not None:
+            valid_set = list(valid_set)
+            valid_set[0] = theano.shared(valid_set[0])
+            valid_set[1] = theano.shared(valid_set[1])
     
-        datasets = (dataset_x, dataset_y)
+        if test_set is not None:
+            test_set = list(test_set)
+            test_set[0] = theano.shared(test_set[0])
+            test_set[1] = theano.shared(test_set[1])
+    
+        datasets = ((dataset_x, dataset_y), valid_set, test_set)
         self.tester = NetworkTester(self.net, y)
         print "...done"
     

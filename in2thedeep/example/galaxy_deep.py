@@ -7,12 +7,17 @@ import numpy as np
 from in2thedeep.Interface.wrapper import Wrapper
 import theano.tensor as T
 import theano
+import cPickle
 
 
 def load_dataset():
     """ load train,valid and test set (x, label)"""
     print "loading data..."
-    pass
+    with open('data/galaxy_small.pkl') as f:
+        datasets = cPickle.load(f)
+    print "done"
+    return datasets
+
 
 
 def fake_data():
@@ -23,7 +28,8 @@ def fake_data():
 
 
 def train():
-    train_set, valid_set, test_set = fake_data()
+    train_set, valid_set, test_set = load_dataset()
+    #train_set, valid_set, test_set = fake_data()
 
     batch_size = 128
 
@@ -61,11 +67,15 @@ def train():
 
     layer4 = {
         'n_in': 324,
-        'n_out': 100}
+        'n_out': 100,
+        'dropout_rate': 0.5,
+        'dropout': True}
 
     layer5 = {
         'n_in': 100,
-        'n_out': 100}
+        'n_out': 100,
+        'dropout_rate': 0.5,
+        'dropout': True}
 
     layer6 = {
         'n_in': 100,
@@ -73,7 +83,7 @@ def train():
 
     optim_infos = {
         'method': 'gradient',
-        'learning_rate': 0.05,
+        'learning_rate': 0.4,
         'batch_size': batch_size,
         'n_epochs': 100
     }
@@ -89,7 +99,27 @@ def train():
     net_trainer = Wrapper(network_architect, OptimInfos(optim_infos))
     #print data
     #raw_input()
-    net_trainer.fit(*train_set)
+    net_trainer.fit(train_set[0], train_set[1], valid_set[:-1], test_set[:-1])
+
+
+def keep_on_learning():
+    train_set, valid_set, test_set = load_dataset()
+    #train_set, valid_set, test_set = fake_data()
+
+    network_architect = NetworkArchitect()
+    network_architect.load_network()
+    batch_size = 128
+    optim_infos = {
+        'method': 'gradient',
+        'learning_rate': 0.4,
+        'batch_size': batch_size,
+        'n_epochs': 100
+    }
+ 
+    net_trainer = Wrapper(network_architect, OptimInfos(optim_infos))
+    #print data
+    #raw_input()
+    net_trainer.fit(train_set[0], train_set[1], valid_set[:-1], test_set[:-1])
 
 
 def show_weight():
@@ -141,5 +171,6 @@ def show_weight():
     plt.show()
 
 if __name__ == "__main__":
+    #keep_on_learning()
     train()
     #show_weight()
