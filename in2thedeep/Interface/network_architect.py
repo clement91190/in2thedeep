@@ -1,5 +1,6 @@
 from in2thedeep.FFN.network import FFNetwork
 from in2thedeep.FFN.layers.conv_layer import LeNetConvPoolLayerInfos
+from in2thedeep.FFN.layers.mlp_layer import HiddenLayerInfos
 import pickle
 
 
@@ -21,6 +22,10 @@ class NetworkArchitect():
             print "first layer, dataset shape ", infos['image_shape']
             self.dataset_shape = infos['image_shape']
         self.list_of_layers_infos.append(LeNetConvPoolLayerInfos(infos))
+        self.id_of_deepest_layer = len(self.list_of_layers_infos)
+
+    def add_dense_layer(self, infos):
+        self.list_of_layers_infos.append(HiddenLayerInfos(infos))
         self.id_of_deepest_layer = len(self.list_of_layers_infos)
 
     def set_dataset_shape(self, dataset_shape, input_type):

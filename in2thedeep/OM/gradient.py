@@ -43,8 +43,8 @@ class Gradient():
         print "step"
         c = []
         #for batch_index in xrange(self.n_train_batches):
-        for batch_index in xrange(self.n_train_batches - 1):
-            #print self.eval(batch_index)
+        for batch_index in xrange(self.n_train_batches):
+            #print "eval",  self.eval(batch_index)
             c.append(self.train_net(batch_index))
         print 'Training epoch %d, cost ' % epoch, np.mean(c)
         self.network_tester.save()

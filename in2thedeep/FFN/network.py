@@ -40,7 +40,11 @@ class FFNetwork():
         #potential reshaping
         next_type = layer_infos.get_input_structure()
         if self.temp_type != next_type:
-            temp_input = self.reshape_mapping[(self.temp_type, next_type)](temp_input, self.dataset_shape)
+            if len(self.layers) == 0:
+                print " adding first layer"
+                temp_input = self.reshape_mapping[(self.temp_type, next_type)](temp_input, self.dataset_shape)
+            else:
+                temp_input = self.reshape_mapping[(self.temp_type, next_type)](temp_input, layer_infos.get_output_shape())
             self.temp_type = next_type
         
         layer = layer_infos.get_layer(temp_input)

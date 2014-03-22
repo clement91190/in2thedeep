@@ -29,6 +29,10 @@ class LeNetConvPoolLayerInfos(LayerInfos):
             self.infos['pooling_on'] = True
         if self.infos.get('border_mode') is None:
             self.infos['border_mode'] = "valid"  # full or valid parameter of convolution
+        if self.infos.get('ignore_border') is None:
+            self.infos['ignore_border'] = True  # same for maxpooling op
+        if self.infos.get('poolsize') is None:
+            self.infos['poolsize'] = (2, 2)  # 
 
         self.infos['constructor'] = LeNetConvPoolLayer
         self.infos['input_structure'] = 'tensor4'
@@ -70,7 +74,18 @@ class LeNetConvPoolLayerInfos(LayerInfos):
         else:
             output_shape[2] = self.infos['image_shape'][2] + self.infos['filter_shape'][2] - 1
             output_shape[3] = self.infos['image_shape'][3] + self.infos['filter_shape'][3] - 1
+
+        if self.infos['pooling_on']:
+            print "careful with output shape ?"
+            output_shape[2] /= self.infos['poolsize'][0]
+            output_shape[3] /= self.infos['poolsize'][0]
+            if not self.infos['ignore_border']:
+                output_shape[2] += 1
+                output_shape[3] += 1
         self.infos['output_shape'] = output_shape
+
+    def get_output_shape(self):
+        return self.infos['output_shape']
 
 
 class LeNetConvPoolLayer(Layer):
@@ -93,7 +108,7 @@ class LeNetConvPoolLayer(Layer):
             image_shape=self.layer_infos['image_shape'])
 
         if self.layer_infos['pooling_on']:
-            pooled_out = downsample.max_pool_2d(conv_out, self.poolsize, ignore_border=True)
+            pooled_out = downsample.max_pool_2d(conv_out, self.layer_infos['poolsize'], self.layer_infos['ignore_border'])
         else:
             pooled_out = conv_out
 

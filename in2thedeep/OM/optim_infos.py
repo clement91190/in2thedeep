@@ -17,7 +17,7 @@ class OptimInfos():
     def def_method(self, datasets, network_tester):
         if self.infos['method'] == 'gradient':
             print "method : gradient"
-            self.method = Gradient(datasets, network_tester, self.infos['learning_rate'])
+            self.method = Gradient(datasets, network_tester, self.infos['learning_rate'], self.infos['batch_size'])
         else:
             raise NotImplementedError("unknown method")
 

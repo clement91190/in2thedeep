@@ -45,6 +45,9 @@ class HiddenLayerInfos(LayerInfos):
 
         if self.infos.get('n_in') is None:
             raise NotImplementedError(' recreating architecture from W and b is not done yet')
+    
+    def get_output_shape(self):
+        return (1, self.infos['n_out'])
 
     def __str__(self):
         return """ Multi Perception Layer :

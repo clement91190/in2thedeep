@@ -54,4 +54,7 @@ class LayerInfos():
     def get_input_structure(self):
         return self.infos['input_structure']
 
+    def get_output_shape(self):
+        raise NotImplementedError("not inherited method !")
+
 
