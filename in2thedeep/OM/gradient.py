@@ -1,4 +1,5 @@
 import numpy as np
+import random
 import theano
 import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
@@ -27,6 +28,7 @@ class Gradient():
         print batch_size
         #print self.train_set_x
         self.n_train_batches = int(self.train_set_x.get_value().shape[0] / self.batch_size)
+        print self.n_train_batches
         self.n_valid = int(self.valid_set_x.get_value().shape[0] / self.batch_size)
         self.n_test = int(self.test_set_x.get_value().shape[0] / self.batch_size)
         #print self.n_train_batches
@@ -70,13 +72,20 @@ class Gradient():
         for batch_index in xrange(self.n_train_batches):
             #print "eval",  self.eval(batch_index)
             c.append(self.train_net(batch_index))
-            if batch_index % 50 == 0:
-                print 'In the middle of Training epoch %d, cost on train' % epoch, np.mean(c)
+            if batch_index % 10 == 0:
+                print 'In the middle of epoch %d, cost on train' % epoch, np.mean(c)
         print 'Training epoch %d, cost on train' % epoch, np.mean(c)
-        if self.valid:
-            print 'valid', self.valid_net(0)
-        if self.test:
-            print 'test', self.test_net(0)
+        if random.random() < 0.3: 
+            if self.valid:
+                c = []
+                for batch_index in xrange(self.n_valid):
+                    c.append(self.train_net(batch_index))
+                print 'valid', np.mean(c)
+            if self.test:
+                c = []
+                for batch_index in xrange(self.n_test):
+                    c.append(self.train_net(batch_index))
+                print 'test', np.mean(c)
         self.network_tester.save()
 
     def loop(self, n_epoch):

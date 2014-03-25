@@ -13,15 +13,15 @@ import cPickle
 def load_dataset():
     """ load train,valid and test set (x, label)"""
     print "loading data..."
-    with open('data/galaxy_small.pkl') as f:
+    with open('data/galaxy_medium.pkl') as f:
+    #with open('data/galaxy_big.pkl') as f:
         datasets = cPickle.load(f)
     print "done"
     return datasets
 
 
-
 def fake_data():
-    datax = np.random.random(3* 64 * 64)
+    datax = np.random.random(3 * 64 * 64)
     datax = np.array([datax for d in range(128)], dtype='float32')
     datay = np.zeros((128, 37), dtype="float32")
     return ((datax, datay), [], [])
@@ -38,7 +38,7 @@ def train():
         #'b': np.zeros((self.filter_shape[1],), dtype=theano.config.floatX),
         #'activation': self.layer_infos['activation'],
         'pooling_on': True,
-        'poolsize': (4, 4),
+        'poolsize': (2, 2),
         'border_mode': 'valid',
         'filter_shape':  (24, 3, 8, 8),
         'image_shape': (batch_size, 3, 64, 64)
@@ -52,7 +52,7 @@ def train():
         'poolsize': (2, 2),
         'border_mode': 'valid',
         'filter_shape':  (36, 24, 4, 4),
-        'image_shape': (batch_size, 24, 14, 14)
+        'image_shape': (batch_size, 24, 28, 28)
     }
   
     layer3 = {
@@ -62,17 +62,17 @@ def train():
         'pooling_on': False,
         'border_mode': 'valid',
         'filter_shape':  (36, 36, 3, 3),
-        'image_shape': (batch_size, 36, 5, 5)
+        'image_shape': (batch_size, 36, 12, 12)
     }
 
     layer4 = {
-        'n_in': 324,
-        'n_out': 100,
+        'n_in': 3600,
+        'n_out': 200,
         'dropout_rate': 0.5,
         'dropout': True}
 
     layer5 = {
-        'n_in': 100,
+        'n_in': 200,
         'n_out': 100,
         'dropout_rate': 0.5,
         'dropout': True}
@@ -111,9 +111,9 @@ def keep_on_learning():
     batch_size = 128
     optim_infos = {
         'method': 'gradient',
-        'learning_rate': 0.4,
+        'learning_rate': 0.1,
         'batch_size': batch_size,
-        'n_epochs': 100
+        'n_epochs': 10000
     }
  
     net_trainer = Wrapper(network_architect, OptimInfos(optim_infos))
@@ -140,8 +140,8 @@ def show_weight():
     size = np.prod(shape[1:])
     print size
     raw_input()
-    train_set_x = theano.shared(np.identity(size, dtype="float32"))
-    train_set_y = theano.shared(np.identity(size, dtype="float32"))
+    train_set_x = theano.shared(np.identity(size, dtype="float32"), borrow=True)
+    train_set_y = theano.shared(np.identity(size, dtype="float32"), borrow=True)
 
     predict = network_tester.predict()
     #tester.predict()
@@ -171,6 +171,6 @@ def show_weight():
     plt.show()
 
 if __name__ == "__main__":
-    #keep_on_learning()
-    train()
+    keep_on_learning()
+    #train()
     #show_weight()

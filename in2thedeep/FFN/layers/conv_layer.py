@@ -98,8 +98,8 @@ class LeNetConvPoolLayer(Layer):
         #print self.layer_infos
         self.input = input
 
-        self.W = theano.shared(value=self.layer_infos['W'], name='W')
-        self.b = theano.shared(value=self.layer_infos['b'], name='b')
+        self.W = theano.shared(value=self.layer_infos['W'], name='W', borrow=True)
+        self.b = theano.shared(value=self.layer_infos['b'], name='b', borrow=True)
 
         conv_out = conv.conv2d(
             input, self.W,

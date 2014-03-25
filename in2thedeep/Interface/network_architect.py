@@ -59,6 +59,11 @@ class NetworkArchitect():
         print self.list_of_layers_infos
         return FFNetwork(input, self.list_of_layers_infos, self.dataset_shape, self.input_type)
 
+    def build_test_net(self, input):
+        for info in self.list_of_layers_infos:
+            info.format_test()
+        return self.build_network(input)
+
     def build_autoencoder(self, input):
         """ create the autoencoder with layers[:deepest_layer] and their symmetric """
         net = FFNetwork(input, self.list_of_layers_infos[:self.id_of_deepest_layer], self.dataset_shape, self.input_type)

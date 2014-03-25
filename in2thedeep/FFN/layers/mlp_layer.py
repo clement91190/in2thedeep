@@ -45,6 +45,10 @@ class HiddenLayerInfos(LayerInfos):
 
         if self.infos.get('n_in') is None:
             raise NotImplementedError(' recreating architecture from W and b is not done yet')
+
+    def format_test(self):
+        if self.infos['dropout']:
+            self.infos['dropout_test'] = True
     
     def get_output_shape(self):
         return (1, self.infos['n_out'])
@@ -70,14 +74,16 @@ class HiddenLayer(Layer):
         self.srng = theano.tensor.shared_randomstreams.RandomStreams(
             self.rng.randint(999999)) 
         if self.layer_infos['dropout_test']:
-            self.W *= self.layer_infos['dropout_rate']  # mean for testing after dropout training TODO change this to make it possible during training
+            self.W = self.W * self.layer_infos['dropout_rate'] 
                      
         self.output = self.layer_infos['activation'](T.dot(input, self.W) + self.b)
         self.params = [self.W, self.b]
         
-        if self.layer_infos['dropout']:
+        if self.layer_infos['dropout'] and not self.layer_infos['dropout_test']:
+            W_bis = self.W * self.layer_infos['dropout_rate'] 
             mask = self.srng.binomial(n=1, p=1-self.layer_infos['dropout_rate'], size=self.output.shape)
             self.output = self.output * T.cast(mask, theano.config.floatX)
+            self.output_bis = self.layer_infos['activation'](T.dot(input, W_bis) + self.b)
       
     def get_symmetric_infos(self):
         infos = {

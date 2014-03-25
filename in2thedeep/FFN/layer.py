@@ -56,5 +56,7 @@ class LayerInfos():
 
     def get_output_shape(self):
         raise NotImplementedError("not inherited method !")
-
+    
+    def format_test(self):
+        pass
 

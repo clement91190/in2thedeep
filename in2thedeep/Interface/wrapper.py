@@ -35,17 +35,17 @@ class Wrapper():
             dataset_x = X
             dataset_y = Y
         
-        dataset_x = theano.shared(dataset_x) 
-        dataset_y = theano.shared(dataset_y) 
+        dataset_x = theano.shared(dataset_x, borrow=True) 
+        dataset_y = theano.shared(dataset_y, borrow=True) 
         if valid_set is not None:
             valid_set = list(valid_set)
-            valid_set[0] = theano.shared(valid_set[0])
-            valid_set[1] = theano.shared(valid_set[1])
+            valid_set[0] = theano.shared(valid_set[0], borrow=True)
+            valid_set[1] = theano.shared(valid_set[1], borrow=True)
     
         if test_set is not None:
             test_set = list(test_set)
-            test_set[0] = theano.shared(test_set[0])
-            test_set[1] = theano.shared(test_set[1])
+            test_set[0] = theano.shared(test_set[0], borrow=True)
+            test_set[1] = theano.shared(test_set[1], borrow=True)
     
         datasets = ((dataset_x, dataset_y), valid_set, test_set)
         self.tester = NetworkTester(self.net, y)
@@ -54,6 +54,45 @@ class Wrapper():
         print self.net
         self.optim_infos.run_method(datasets, self.tester)
 
+    def eval(self, X, Y=None):
+        """ evaluation"""
+        try:
+            assert(self.network_architect is not None)
+        except:
+            raise NotImplementedError("You need to provide parameters to build the network")
+
+        x = T.matrix('x')
+        y = T.matrix('y')
+   
+        if Y is None:
+            raise NotImplementedError("autoencoder have to test mode.")
+        else:
+            print "building net ..."
+            self.net = self.network_architect.build_test_net(x)
+            dataset_x = X
+            dataset_y = Y
+        
+        dataset_x = theano.shared(dataset_x, borrow=True) 
+        dataset_y = theano.shared(dataset_y, borrow=True) 
+   
+        self.tester = NetworkTester(self.net, y)
+        cost = self.tester.get_cost()
+        batch_size = self.optim_infos.infos['batch_size']
+        self.index = T.lscalar()    # index to a [mini]batch
+        self.eval_net = theano.function(
+            [self.index], cost,
+            givens={
+                self.tester.input: dataset_x[self.index * batch_size:(self.index + 1) * batch_size],
+                self.tester.y_values: dataset_y[self.index * batch_size:(self.index + 1) * batch_size]})
+        c = []
+
+        self.n_train_batches = int(dataset_x.get_value().shape[0] / batch_size)
+        for batch_index in xrange(self.n_train_batches):
+            c.append(self.eval_net(batch_index))
+        print 'valid', np.mean(c)
+        print "...done"
+        return np.mean(c)
+    
     def transform(self, X):
         """ transform to feature space """
         pass
