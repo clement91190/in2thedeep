@@ -42,11 +42,11 @@ class NetworkArchitect():
             self.list_of_layers_infos = pickle.load(fich)
         self.dataset_shape = self.list_of_layers_infos[0].infos['image_shape']
      
-
     def change_batch_size(self, batch_size=1):
         """ use this before creating the network ! """
         for infos in self.list_of_layers_infos:
             infos.change_batch_size(batch_size)
+        self.dataset_shape = self.list_of_layers_infos[0].infos['image_shape']
 
     def from_autoencoder(self):
         """ keep only first half of the layer to build a net from an autoencoder """

@@ -67,6 +67,15 @@ class FFNetwork():
         return res
 
 
+class NetworkTransformer():
+    def __init__(self, network):
+        self.network = network
+        self.input = self.network.input
+
+    def predict(self):
+        return self.network.output
+  
+
 class NetworkTester():
     """ get errors function for layer """
     def __init__(self, network, y_values, path='model.tkl'):

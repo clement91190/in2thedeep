@@ -47,6 +47,7 @@ class LeNetConvPoolLayerInfos(LayerInfos):
         shape = list(shape)
         shape[0] = batch_size
         self.infos['image_shape'] = tuple(shape)
+        self.complete_infos()
 
     def complete_infos(self):
         fan_in = np.prod(self.infos['filter_shape'][1:])

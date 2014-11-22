@@ -111,7 +111,7 @@ def keep_on_learning():
     batch_size = 128
     optim_infos = {
         'method': 'gradient',
-        'learning_rate': 0.1,
+        'learning_rate': 0.05,
         'batch_size': batch_size,
         'n_epochs': 10000
     }

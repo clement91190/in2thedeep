@@ -1,6 +1,7 @@
 from in2thedeep.OM.optim_infos import OptimInfos
 import numpy as np
 from in2thedeep.FFN.network import NetworkTester
+from in2thedeep.FFN.network import NetworkTransformer
 import theano.tensor as T
 import theano
 
@@ -92,8 +93,44 @@ class Wrapper():
         print 'valid', np.mean(c)
         print "...done"
         return np.mean(c)
-    
+  
     def transform(self, X):
+        """ evaluation"""
+        try:
+            assert(self.network_architect is not None)
+        except:
+            raise NotImplementedError("You need to provide parameters to build the network")
+
+        x = T.matrix('x')
+   
+        print "building net ..."
+        batch_size = X.shape[0]
+        self.optim_infos.infos['batch_size'] = batch_size
+  
+        self.network_architect.change_batch_size(batch_size)
+        self.net = self.network_architect.build_test_net(x)
+        dataset_x = X
+        
+        dataset_x = theano.shared(dataset_x, borrow=True) 
+   
+        self.tester = NetworkTransformer(self.net)
+        cost = self.tester.predict()
+        #batch_size = self.optim_infos.infos['batch_size']
+        self.index = T.lscalar()    # index to a [mini]batch
+        self.eval_net = theano.function(
+            [self.index], cost,
+            givens={
+                self.tester.input: dataset_x[self.index * batch_size:(self.index + 1) * batch_size]})
+        c = []
+
+        self.n_train_batches = int(dataset_x.get_value().shape[0] / batch_size)
+        for batch_index in xrange(self.n_train_batches):
+            c.append(self.eval_net(batch_index))
+        #c = np.array(c)
+        c = np.concatenate(c)
+        print c.shape
+        return c
+  
         """ transform to feature space """
         pass
 
