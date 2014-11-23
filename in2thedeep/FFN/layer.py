@@ -42,7 +42,7 @@ class LayerInfos():
         self.complete_infos()
         return self.infos
     
-    def change_batch_size(batch_size):
+    def change_batch_size(self, batch_size):
         pass
 
     def get_layer(self, input):

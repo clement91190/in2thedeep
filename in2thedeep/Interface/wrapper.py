@@ -14,6 +14,7 @@ class Wrapper():
 #TODO add default option ? 
         self.network_architect = network_architect
         self.optim_infos = optim_infos
+        self.transform_ready = False
 
     def fit(self, X, Y=None, valid_set=None, test_set=None):
         """ train the algorithm """
@@ -29,7 +30,7 @@ class Wrapper():
             print "no y given -> training autoencoder"
             self.net = self.network_architect.build_autoencoder(x) 
             dataset_x = X
-            dataset_y = X #np.copy(X)
+            dataset_y = X  # np.copy(X)
         else:
             print "building net ..."
             self.net = self.network_architect.build_network(x) 
@@ -49,7 +50,7 @@ class Wrapper():
             test_set[1] = theano.shared(test_set[1], borrow=True)
     
         datasets = ((dataset_x, dataset_y), valid_set, test_set)
-        self.tester = NetworkTester(self.net, y)
+        self.tester = NetworkTester(self.net, y, method=self.optim_infos.infos['cost_method'], take=self.optim_infos.infos['take'])
         print "...done"
     
         print self.net
@@ -100,27 +101,27 @@ class Wrapper():
             assert(self.network_architect is not None)
         except:
             raise NotImplementedError("You need to provide parameters to build the network")
-
-        x = T.matrix('x')
-   
-        print "building net ..."
-        batch_size = X.shape[0]
-        self.optim_infos.infos['batch_size'] = batch_size
-  
-        self.network_architect.change_batch_size(batch_size)
-        self.net = self.network_architect.build_test_net(x)
         dataset_x = X
-        
         dataset_x = theano.shared(dataset_x, borrow=True) 
-   
-        self.tester = NetworkTransformer(self.net)
-        cost = self.tester.predict()
-        #batch_size = self.optim_infos.infos['batch_size']
-        self.index = T.lscalar()    # index to a [mini]batch
-        self.eval_net = theano.function(
-            [self.index], cost,
-            givens={
-                self.tester.input: dataset_x[self.index * batch_size:(self.index + 1) * batch_size]})
+        batch_size = X.shape[0]
+
+        if not self.transform_ready:
+            self.transform_ready = True
+            x = T.matrix('x')
+    
+            print "building net ..."
+            self.optim_infos.infos['batch_size'] = batch_size
+    
+            #self.network_architect.change_batch_size(batch_size)
+            self.net = self.network_architect.build_test_net(x)
+            self.tester = NetworkTransformer(self.net)
+            cost = self.tester.predict()
+            #batch_size = self.optim_infos.infos['batch_size']
+            self.index = T.lscalar()    # index to a [mini]batch
+            self.eval_net = theano.function(
+                [self.index], cost,
+                givens={
+                    self.tester.input: dataset_x[self.index * batch_size:(self.index + 1) * batch_size]})
         c = []
 
         self.n_train_batches = int(dataset_x.get_value().shape[0] / batch_size)
@@ -128,12 +129,9 @@ class Wrapper():
             c.append(self.eval_net(batch_index))
         #c = np.array(c)
         c = np.concatenate(c)
-        print c.shape
+        #print c.shape
         return c
   
-        """ transform to feature space """
-        pass
-
     def fit_transform(self, X):
         self.fit(X)
         return self.transform(X)

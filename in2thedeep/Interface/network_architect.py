@@ -4,14 +4,16 @@ from in2thedeep.FFN.layers.mlp_layer import HiddenLayerInfos
 import pickle
 
 
-class NetworkArchitect():
+class NetworkArchitect:
     """ class to build the networks, and configure the Optimization method """
 #TODO make it easier to add layers building the LayerInfos parameters
-    def __init__(self, list_of_layers_infos=[]):
-        self.list_of_layers_infos = list_of_layers_infos
+
+    def __init__(self, l_layers_infos=[]):
+        print l_layers_infos
+        self.list_of_layers_infos = list(l_layers_infos)
         self.dataset_shape = (1, 1, 32, 32)
         self.input_type = 'matrix'
-        self.id_of_deepest_layer = len(list_of_layers_infos)
+        self.id_of_deepest_layer = len(l_layers_infos)
 
     def add_layer(self, layer_info):
         """ add the layer in the list """
@@ -83,7 +85,7 @@ class NetworkArchitect():
 
     def __str__(self):
         res = "#######-- Architecture --#######\n "
-        for layer in self.layers:
+        for layer in self.list_of_layers_infos:
             res += layer.__str__()
             res += "\n" + "           //||\\        \n"
         res += "----------------"

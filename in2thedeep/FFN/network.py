@@ -78,16 +78,18 @@ class NetworkTransformer():
 
 class NetworkTester():
     """ get errors function for layer """
-    def __init__(self, network, y_values, path='model.tkl'):
+    def __init__(self, network, y_values, path='model.tkl', method='rmse', take=False):
         self.network = network
         self.y_values = y_values
         self.input = self.network.input
         self.saving_path = path
+        self.method = method
+        self.take = take
 
-    def get_cost_updates(self, learning_rate=0.1, method="rmse"):
+    def get_cost_updates(self, learning_rate=0.1):
 #TODO change this to do the grad someplace else
-        cost = self.get_cost(method)
-        print "cost type", method
+        cost = self.get_cost()
+        print "cost type", self.method
 
         #print " params type", type(self.network.params[0])
         gparams = T.grad(cost, self.network.params)
@@ -99,12 +101,33 @@ class NetworkTester():
     def save(self):
         self.network.save_model(self.saving_path)
 
-    def get_cost(self, method="rmse"):
+    def get_take_cost(self):
         y_pred = self.network.output
-        if method == "cross":
+        ind = self.y_values.astype('int32')
+        y_val_select = self.y_values.take(ind) 
+        y_pred = y_pred.take(ind) 
+
+        if self.method == "cross":
+            L = -T.sum(y_val_select * T.log(y_pred) + (1.0 - y_val_select) * T.log(1 - y_pred), axis=1)
+            cost = T.mean(L)
+        elif self.method == "rmse":
+            print "rmse"
+            print self.y_values
+            L = T.sqrt(T.mean(T.square(y_pred - y_val_select), axis=1))
+            cost = T.mean(L)
+        else:
+            raise NotImplementedError("method not implemented -> use cross entropy error")
+        return cost
+
+    def get_cost(self):
+        if self.take:
+            return self.get_take_cost()
+
+        y_pred = self.network.output
+        if self.method == "cross":
             L = -T.sum(self.y_values * T.log(y_pred) + (1.0 - self.y_values) * T.log(1 - y_pred), axis=1)
             cost = T.mean(L)
-        elif method == "rmse":
+        elif self.method == "rmse":
             print "rmse"
             print self.y_values
             L = T.sqrt(T.mean(T.square(y_pred - self.y_values), axis=1))

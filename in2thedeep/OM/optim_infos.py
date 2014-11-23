@@ -3,16 +3,18 @@ from in2thedeep.OM.gradient import Gradient
 
 class OptimInfos():
     """ class with all the parameters to use a learning algorithm """
-    def __init__(self, dict=None):
-        if dict is None:
-            self.infos = {
-                'method': 'gradient',
-                'learning_rate': 0.1,
-                'batch_size': 20,
-                'n_epochs': 100
-            }
-        else:
-            self.infos = dict
+    def __init__(self, infos=None):
+        self.infos = {
+            'method': 'gradient',
+            'learning_rate': 0.1,
+            'batch_size': 20,
+            'n_epochs': 100,
+            'take': False,
+            'cost_method': 'cross'
+        }
+        if infos is not None:
+            for key, value in infos.iteritems():
+                self.infos[key] = value
 
     def def_method(self, datasets, network_tester):
         if self.infos['method'] == 'gradient':

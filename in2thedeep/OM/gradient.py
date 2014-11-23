@@ -72,8 +72,8 @@ class Gradient():
         for batch_index in xrange(self.n_train_batches):
             #print "eval",  self.eval(batch_index)
             c.append(self.train_net(batch_index))
-            if batch_index % 10 == 0:
-                print 'In the middle of epoch %d, cost on train' % epoch, np.mean(c)
+            #if batch_index % 10 == 0:
+            #    print 'In the middle of epoch %d, cost on train' % epoch, np.mean(c)
         print 'Training epoch %d, cost on train' % epoch, np.mean(c)
         if random.random() < 0.3: 
             if self.valid:
